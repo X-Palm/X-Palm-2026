@@ -1,309 +1,293 @@
-# X-Palm: Cross-Domain & Cross-Dataset Palmprint Recognition Benchmark
+# X-Palm: Paired Multispectral-to-Smartphone Dataset for Cross-Domain Palmprint Authentication
 
-A systematic evaluation framework for palmprint recognition under domain shift, covering cross-dataset generalization, leave-one-out transfer, and within-dataset cross-domain adaptation across four public palmprint datasets.
+**[Paper]** | **[GitHub](https://github.com/X-Palm/X-Palm-2026)** | **[Dataset Access](#dataset-access)**
+
+X-Palm is a cross-domain palmprint dataset comprising **6,006 palm images from 103 individuals (206 hands)**, designed to bridge the gap between controlled multispectral enrollment and unconstrained smartphone authentication. It is the first palmprint dataset providing **paired-identity acquisition** across these two domains, encompassing a broad spectrum of in-the-wild variability.
 
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)  
-2. [Datasets](#datasets)  
-3. [Experiments](#experiments)  
-4. [Baselines](#baselines)  
-5. [Installation](#installation)  
-6. [Data Preparation](#data-preparation)  
-7. [Running Experiments](#running-experiments)  
-8. [Evaluation Protocol](#evaluation-protocol)  
-9. [Results Format](#results-format)  
-10. [Citation](#citation)
+1. [Overview](#overview)
+2. [Dataset](#dataset)
+3. [Benchmarking Code](#benchmarking-code)
+4. [Evaluation Protocols](#evaluation-protocols)
+5. [Baseline Methods](#baseline-methods)
+6. [Installation](#installation)
+7. [Data Preparation](#data-preparation)
+8. [Running Experiments](#running-experiments)
+9. [Implementation Details](#implementation-details)
+10. [Results Summary](#results-summary)
+11. [Citation](#citation)
 
 ---
 
 ## Overview
 
-Palmprint recognition systems are typically trained and tested on a single dataset under controlled conditions. In real-world deployment, however, models encounter images captured by different devices, under varying lighting, at different distances, and across diverse populations. X-Palm benchmarks how well palmprint models generalize under these realistic domain shifts.
+Real-world palmprint authentication requires models to generalize from controlled enrollment to unconstrained mobile verification. Existing datasets capture only partial aspects of this challenge. X-Palm provides paired data for the same identities across two distinct domains:
 
-The benchmark consists of **four experiment types**, each probing a different axis of generalization:
+1. **Controlled Multispectral Enrollment** — captured using a custom-developed multispectral scanner with programmable illumination across six spectral bands (green, blue, red, yellow, white, IR) at 4608×2592 resolution.
 
-| Experiment | Question it answers | # Settings |
+2. **Unconstrained Smartphone Authentication** — participant-driven mobile collection using personal devices (80+ models from 10+ brands), deliberately capturing compound variability in hand pose, illumination, distance, perspective, background, occlusion, and palm surface conditions.
+
+Our extensive benchmarks of **12 SOTA models** across three evaluation protocols reveal that existing methods experience severe performance collapse on X-Palm, while models trained on X-Palm demonstrate consistent cross-domain robustness.
+
+---
+
+## Dataset
+
+### X-Palm Statistics
+
+| Property | Value |
+|---|---|
+| Participants | 103 (61 male, 42 female) |
+| Total hands | 206 |
+| Total images | 6,006 |
+| Paired participants | 81 (both scanner + smartphone) |
+| Smartphone-only participants | 22 |
+| Scanner images/hand | 18 (3 poses × 6 spectra) |
+| Smartphone images/hand | 15 (10 structured + 5 random) |
+| ROI size | 112 × 112 |
+| Age range | 18–76 |
+| Ethnic groups | 11 self-reported |
+| Smartphone brands | 10+ (80+ distinct models) |
+
+### Acquisition Domains
+
+**Multispectral Scanner (Controlled):**
+Six spectral bands — Green, Blue, Red, Yellow, White, and IR — captured across three hand poses (separated fingers, bent fingers, joined fingers).
+
+**Smartphone (Unconstrained):**
+Ten structured variations plus five random captures per hand:
+
+| Variation | Abbreviation | Description |
 |---|---|---|
-| Cross-Dataset | Can a model trained on one dataset recognize palms from a completely different dataset? | 16 (4×4 grid) |
-| Leave-One-Dataset-Out | Does training on three diverse datasets improve transfer to an unseen fourth? | 4 |
-| Cross-Domain Closed-Set | Within one dataset, can a model handle domain shift (e.g., scanner→smartphone) when the same people appear in train and test? | 12 |
-| Cross-Domain Open-Set | Same as above, but with completely disjoint identities between train and test (the realistic deployment scenario). | 12 |
+| Bent Fingers | BF | Fingers curled inward |
+| Joined Fingers | JF | Fingers pressed together |
+| Separated Fingers | SF | Fingers spread apart |
+| Close | Close | Hand held close to camera |
+| Far | Far | Hand held far from camera |
+| Flash ON | FO | Smartphone flash activated |
+| Pitch | Pitch | Wrist tilted forward/backward |
+| Roll | Roll | Wrist rotated sideways |
+| Text | Text | Handwritten text on palm surface |
+| Wet | Wet | Moisture on palm surface |
+| Random 1–5 | RND | Arbitrary combinations of the above |
 
-All experiments share the same evaluation framework: 512-dimensional normalized embeddings, cosine similarity matching, and reporting of EER (Equal Error Rate) and Rank-1 accuracy.
+### Additional Benchmark Datasets
 
----
+Cross-dataset evaluation uses three additional public datasets:
 
-## Datasets
+| Dataset | #Hands | #Images | Devices | Conditions |
+|---|---|---|---|---|
+| CASIA-MS | 200 | 7,200 | 1 scanner | 6 spectra, controlled |
+| MPD-v2 | 400 | 16,000 | 2 smartphones | Background + lighting variation |
+| XJTU-UP | 200 | 20,000 | 5 smartphones | 2 lighting conditions |
 
-Four palmprint datasets spanning scanner-based, smartphone-based, and multi-device capture:
+### Dataset Access
 
-### CASIA-MS (Multi-Spectral)
+X-Palm is released for **non-commercial academic use only**. To obtain access:
 
-A multi-spectral palmprint dataset captured with a dedicated scanner under controlled conditions.
+1. Review the End User License Agreement (EULA) available in the [repository](https://github.com/X-Palm/X-Palm-2026)
+2. Submit a signed EULA as instructed on the repository page
+3. Approved requests receive a time-limited secure download link within 24 hours
 
-| Property | Value |
-|---|---|
-| Source | Chinese Academy of Sciences |
-| Capture | Dedicated multi-spectral scanner |
-| Spectra | Multiple (blue, green, IR, NIR, red, white) |
-| Subjects | 200 palms (100 individuals × 2 hands) |
-| Images/palm | ~48 (6 spectra × 8 repetitions) |
-| Resolution | 128×128 ROI |
-| Access | Request from [CASIA Biometrics Ideal](http://biometrics.idealtest.org/) |
+The EULA prohibits redistribution, re-identification attempts, and commercial exploitation.
 
-**Filename format:** `{subjectID}_{side}_{spectrum}_{repetition}.jpg`
-Example: `001_Left_blue_01.jpg`
-
-### Palm-Auth (Smartphone + Scanner)
-
-A dual-modality dataset combining smartphone (perspective) capture under 11 real-world conditions with a multi-spectral desktop scanner.
-
-| Property | Value |
-|---|---|
-| Capture devices | Smartphone camera + desktop scanner |
-| Subjects | 190 palms (perspective), 148 palms (scanner) |
-| Perspective conditions | bf, close, far, fl, jf, pitch, rnd, roll, sf, text, wet |
-| Scanner spectra | green, ir, yellow, pink, white |
-| Resolution | Variable (ROI extracted) |
-| Access | [Contact the authors] |
-
-**Directory structure:**
-```
-smartphone_data/
-├── {subject_id}/
-│   ├── roi_perspective/
-│   │   ├── {id}_{side}_{condition}.jpg         # e.g. 1_left_wet.jpg
-│   │   └── {id}_{side}_{condition}_{rep}.jpg   # e.g. 1_left_rnd_1.jpg
-│   └── roi_scanner/
-│       └── {id}_{Side}_{spectrum}_{rep}.jpg    # e.g. 1_Left_green_01.jpg
-```
-
-**Condition descriptions:**
-
-| Condition | Description |
-|---|---|
-| `rnd` | Random natural pose (rnd_1 through rnd_5) |
-| `wet` | Wet/moist palm |
-| `text` | Texting posture |
-| `sf` | Slight finger spread |
-| `roll` | Wrist roll |
-| `jf` | Joined fingers |
-| `pitch` | Wrist pitch |
-| `bf` | Bent fingers |
-| `far` | Far distance |
-| `close` | Close distance |
-| `fl` | Flashlight on |
-
-### MPDv2 (Mobile Palmprint)
-
-A mobile palmprint dataset captured with two smartphone models.
-
-| Property | Value |
-|---|---|
-| Capture devices | Huawei (h), Motorola (m) |
-| Subjects | 400+ palms |
-| Sessions | Multiple |
-| Resolution | ROI extracted via MediaPipe |
-| Access | Contact the dataset authors |
-
-**Filename format:** `{subject}_{session}_{device}_{hand}_{iteration}.jpg`
-Example: `001_01_h_l_01.jpg` (Subject 001, session 1, Huawei, left hand, iteration 1)
-
-### XJTU-UP (Xi'an Jiaotong University)
-
-A multi-device palmprint dataset with controlled lighting variations.
-
-| Property | Value |
-|---|---|
-| Capture devices | iPhone, Huawei |
-| Conditions | Flash, Natural light |
-| Subjects | 400+ palms |
-| Variations | 4 total (2 devices × 2 lighting) |
-| Access | [Contact XJTU](http://gr.xjtu.edu.cn/en/web/yihonggong) |
-
-**Directory structure:**
-```
-XJTU-UP/
-├── iPhone/
-│   ├── Flash/
-│   │   └── {L/R}_{id}/
-│   │       └── *.jpg
-│   └── Nature/
-│       └── {L/R}_{id}/
-└── huawei/
-    ├── Flash/
-    └── Nature/
-```
+For the public benchmark datasets:
+- **CASIA-MS:** Request from [CASIA Biometrics Ideal](http://biometrics.idealtest.org/)
+- **MPD-v2:** Contact the dataset authors ([Zhang et al., 2020](https://arxiv.org/abs/2003.13266))
+- **XJTU-UP:** Contact [XJTU](http://gr.xjtu.edu.cn/en/web/yihonggong) ([Shao et al., 2019](https://openaccess.thecvf.com/content_CVPRW_2019/html/Biometrics/Shao_Efficient_Deep_Palmprint_Recognition_via_Distilled_Hashing_Coding_CVPRW_2019_paper.html))
 
 ---
 
-## Experiments
+## Benchmarking Code
 
-### Experiment 1: Cross-Dataset (4×4 Grid)
+The repository provides self-contained experiment scripts organized by evaluation protocol:
 
-**Directory:** `cross_dataset/`
+```
+X-Palm-2026/
+├── README.md
+├── cross_dataset/
+│   ├── CompNet_singleScript_allCombinations.py
+│   ├── CCNet_singleScript_allCombinations.py
+│   ├── CO3Net_singleScript_allCombinations.py
+│   ├── PPNet_singleScript_allCombinations.py
+│   ├── SF2Net_singleScript_allCombinations.py
+│   ├── PalmBridge_singleScript_allCombinations.py
+│   ├── ConvNeXtV2_singleScript_allCombinations.py
+│   ├── DINOv2_singleScript_allCombinations.py
+│   ├── ArcFace_singleScript_allCombinations.py
+│   └── MagFace_singleScript_allCombinations.py
+├── closed_set_cross_domain/
+│   ├── CompNet_CrossDomain_ClosedSet.py
+│   ├── ... (one per baseline)
+│   └── palm_auth_closedset_splits.json      ← auto-generated
+├── open_set_cross_domain/
+│   ├── CompNet_CrossDomain_OpenSet.py
+│   ├── ... (one per baseline)
+│   └── palm_auth_openset_splits.json        ← auto-generated
+└── leave_one_dataset_out/
+    ├── CompNet_LeaveOneOut.py
+    └── ... (one per baseline)
+```
 
-Trains a model on one dataset and evaluates on every other dataset (including same-dataset baseline). Tests whether features learned from one palmprint collection transfer to a completely different collection with different demographics, devices, and capture protocols.
+Each script is **fully self-contained**: it includes the model definition, dataset parsing, training loop, evaluation logic, and results reporting. No external model library is required beyond PyTorch and timm.
 
-**Protocol:**
-- **Same-dataset:** 80/20 identity-level split (train on 80% of subjects, test on remaining 20%)
-- **Cross-dataset:** Train on ALL subjects from the source, test on ALL subjects from the target
-- **Test split:** 50/50 sample-level gallery/probe split within the test set
-- **Data balancing:** 190 IDs per dataset (150 "high-sample" IDs × ~29-33 images + 40 "low-sample" IDs × ~14-16 images)
+---
 
-**Output:** 4×4 EER and Rank-1 tables with per-row averages.
+## Evaluation Protocols
 
-### Experiment 2: Leave-One-Dataset-Out
+### Protocol 1: Cross-Dataset (4×4 Grid)
 
-**Directory:** `leave_one_dataset_out/`
+Models are trained on one dataset and evaluated on every other dataset. Tests whether features generalize across completely different collections, demographics, and capture devices.
 
-Trains on three datasets combined and tests on the fourth. Tests whether training on diverse multi-source data improves generalization compared to single-source training.
+- **Train/Test datasets:** X-Palm, CASIA-MS, MPD-v2, XJTU-UP
+- **Same-dataset:** 80/20 identity-level split
+- **Cross-dataset:** Train on all source identities, test on all target identities
+- **Test split:** 50/50 sample-level gallery/probe
+- **Result:** 4×4 matrix of EER and Rank-1 with per-row averages
 
-**Protocol:**
-- **Training:** Combine all samples from 3 datasets (190 IDs each, globally unique label space = 570 classes)
-- **Testing:** 50/50 gallery/probe split on the held-out dataset (190 IDs)
-- **4 experiments:** Each dataset is left out once
+### Protocol 2: Closed-Set Cross-Domain (within X-Palm)
 
-**Output:** Table with one row per held-out dataset + average row.
+Models are trained on specific acquisition domains and tested on held-out domains. **Identities are shared** between train and test (Y_train = Y_test), isolating domain shift as the sole difficulty.
 
-### Experiment 3: Cross-Domain Closed-Set (Palm-Auth)
+**12 settings:**
 
-**Directory:** `closed_set_cross_domain/`
+| Setting | Train Domain | Test Domain (Gallery / Probe) |
+|---|---|---|
+| Scanner | All smartphone domains | Multispectral scanner (50/50 split) |
+| Smartphone | Multispectral scanner | All smartphone domains (50/50 split) |
+| Wet & Text | All except Wet, Text + Scanner | Gallery: Wet / Probe: Text |
+| Wet & RND | All except Wet, RND + Scanner | Gallery: Wet / Probe: RND |
+| RND & Text | All except RND, Text + Scanner | Gallery: RND / Probe: Text |
+| SF & Roll | All except SF, Roll + Scanner | Gallery: SF / Probe: Roll |
+| JF & Pitch | All except JF, Pitch + Scanner | Gallery: JF / Probe: Pitch |
+| BF & Far | All except BF, Far + Scanner | Gallery: BF / Probe: Far |
+| Roll & Close | All except Roll, Close + Scanner | Gallery: Roll / Probe: Close |
+| Far & JF | All except Far, JF + Scanner | Gallery: Far / Probe: JF |
+| FO & SF | All except FO, SF + Scanner | Gallery: FO / Probe: SF |
+| Roll & Pitch | All except Roll, Pitch + Scanner | Gallery: Roll / Probe: Pitch |
 
-Evaluates domain shift within Palm-Auth where the **same identities** appear in both training and testing (but from different domains). Tests whether a model can recognize the same person across different capture conditions.
+### Protocol 3: Open-Set Cross-Domain (within X-Palm)
 
-**Settings (12 total):**
+Same domain-shift scenarios as Protocol 2, but with **completely disjoint identities** (Y_train ∩ Y_test = ∅). This is the realistic deployment scenario.
 
-| Setting | Train domain | Gallery domain | Probe domain |
+- **Identity split:** 80% train / 20% test, no overlap
+- **Test evaluation:** 50/50 sample-level gallery/probe within test identities
+- **Same 12 settings** as Protocol 2
+
+### Protocol 4: Leave-One-Dataset-Out (Appendix)
+
+Models are trained on K−1 datasets combined and evaluated on the held-out dataset. Tests whether multi-source training improves cross-dataset transfer.
+
+- **4 experiments:** Each of the four datasets is held out once
+- **Result:** Table with EER and Rank-1 per held-out dataset + average
+
+---
+
+## Baseline Methods
+
+12 SOTA models spanning palmprint-specific architectures, domain adaptation methods, pretrained vision models, and face-pretrained models:
+
+### Palmprint-Specific Models
+
+| Model | Params | GFLOPs | Optimizer | Key Feature |
+|---|---|---|---|---|
+| CompNet | 3.27M | 0.735 | Adam (lr=1e-3) | Learnable Gabor kernels, competitive blocks |
+| PPNet | 3.53M | 0.735 | Adam (lr=1e-3) | Dual-camera alignment |
+| CCNet | 20.57M | 2.131 | Adam (lr=1e-3) | Comprehensive competition mechanism |
+| CO3Net | 20.57M | 2.131 | Adam (lr=1e-3) | Coordinate-aware contrastive competitive |
+| SF2Net | 13.08M | 2.655 | Adam (lr=1e-3) | Sequence feature fusion |
+| PalmBridge | 3.53M | 0.735 | Adam (lr=1e-3) | Plug-and-play feature alignment (CompNet backbone) |
+
+### Domain Adaptation / Generalization
+
+| Model | Params | GFLOPs | Key Feature |
 |---|---|---|---|
-| S_scanner | Perspective (all conditions, 190 IDs) | Scanner (148 IDs, 50%) | Scanner (148 IDs, 50%) |
-| S_scanner_to_persp | Scanner (148 IDs) | Perspective (148 IDs, 50%) | Perspective (148 IDs, 50%) |
-| S_{A}\_{B} (×10) | Perspective (¬A, ¬B) + Scanner | ALL condition A images | ALL condition B images |
+| TSCAN | 11.31M | 0.486 | Teacher-student co-learning with EMA (decay=0.999) |
+| GIFT | 11.24M | 0.486 | Stylized feature generation for single-source DG |
 
-**10 paired conditions:**
-(wet, text), (wet, rnd), (rnd, text), (sf, roll), (jf, pitch),
-(bf, far), (roll, close), (far, jf), (fl, sf), (roll, pitch)
+### Pretrained Vision Models
 
-**Reproducibility:** Gallery/probe splits are saved to `palm_auth_closedset_splits.json` on first run and reused by all baselines.
+| Model | Params | GFLOPs | Optimizer | Frozen Layers |
+|---|---|---|---|---|
+| ConvNeXtV2-Tiny | 27.87M | 1.067 | AdamW (lr=1e-3, cosine) | All except last stage |
+| DINOv2 ViT-S/14 | 22.06M | 1.398 | AdamW (lr=1e-3, cosine) | All except last 2 blocks |
 
-### Experiment 4: Cross-Domain Open-Set (Palm-Auth)
+### Face-Pretrained Models
 
-**Directory:** `open_set_cross_domain/`
+| Model | Params | GFLOPs | Optimizer | Pretraining |
+|---|---|---|---|---|
+| ArcFace-iResNet100 | 65.12M | 12.098 | AdamW (lr=1e-4, wd=5e-4, cosine) | Glint360K |
+| MagFace-iResNet100 | 65.16M | 12.117 | AdamW (lr=1e-4, wd=5e-4, cosine) | MS1MV2 |
 
-Same domain-shift scenarios as Experiment 3, but with **completely disjoint identities** between train and test (80/20 split). This is the realistic deployment scenario where the system encounters people it has never seen during training.
-
-**Protocol:**
-- **Identity split:** 80% train (~152 IDs) / 20% test (~38 IDs), no overlap
-- **Test evaluation:** 50/50 sample-level gallery/probe within test IDs
-- **Same 12 settings** as the closed-set experiment
-
-**Reproducibility:** ID splits are saved to `palm_auth_openset_splits.json`.
-
----
-
-## Baselines
-
-All baselines share the same evaluation framework (data splits, metrics, gallery/probe construction) and differ only in the model architecture. Each baseline script is self-contained.
-
-### CompNet (Competitive Network with Gabor Filters)
-
-A lightweight model using three parallel Gabor-based competitive blocks at multiple scales, followed by a fully-connected embedding layer and ArcFace classification head.
-
-| Component | Detail |
-|---|---|
-| Input | 128×128 grayscale |
-| Feature extraction | 3 parallel GaborConv2d competitive blocks (kernel sizes 35, 17, 7; strides 3) |
-| Embedding | FC: 9708 → 512-d, L2-normalized |
-| Loss | CrossEntropy + ArcFace (s=30, m=0.5) |
-| Optimizer | Adam (lr=0.001, step decay every 30 epochs, γ=0.8) |
-| Augmentation | 2× factor (color jitter, random crop, perspective warp, rotation) |
-| Parameters | ~5.2M |
-
-### CCNet
-
-Competitive coding network variant. Same evaluation framework, different backbone architecture.
-
-### DINOv2
-
-Vision transformer backbone (ViT) pretrained with DINOv2 self-supervised learning. Fine-tuned with the same ArcFace head and evaluation protocol.
+All models output **512-d L2-normalized embeddings** and use **ArcFace** loss for training (except MagFace which uses its adaptive margin formulation).
 
 ---
 
 ## Installation
 
 ```bash
-# Create environment
-conda create -n xpalm python=3.9 -y
-conda activate xpalm
+conda create -n xpalm python=3.9 -y && conda activate xpalm
 
 # PyTorch (adjust CUDA version as needed)
 pip install torch==2.1.1 torchvision==0.16.1 --index-url https://download.pytorch.org/whl/cu121
 
 # Dependencies
-pip install numpy scipy scikit-learn matplotlib pillow tqdm
+pip install timm numpy scipy scikit-learn matplotlib pillow tqdm
 ```
 
-**Hardware requirements:** Each experiment trains models for 100-300 epochs. A single GPU (RTX 3090 / A100) is sufficient. Multi-GPU is supported via DataParallel.
+**Hardware:** All experiments were conducted on an NVIDIA RTX A6000 (48 GB). Single-GPU training is sufficient; multi-GPU is supported via DataParallel.
 
 ---
 
 ## Data Preparation
 
-### Step 1: Obtain the datasets
+### Step 1: Obtain datasets
 
-| Dataset | How to access |
-|---|---|
-| CASIA-MS | Register at [CASIA Biometrics Ideal](http://biometrics.idealtest.org/) and request the Multi-Spectral Palmprint dataset. Extract ROIs to a flat directory. |
-| Palm-Auth | Contact the authors. The dataset ships with pre-extracted ROIs organized by subject. |
-| MPDv2 | Contact the dataset authors. Use MediaPipe-based ROI extraction (or use the provided `MPDv2_mediapipe_manual_roi` version). |
-| XJTU-UP | Contact XJTU. The dataset is organized by device/condition/identity. |
+Follow the access instructions in the [Dataset Access](#dataset-access) section above for each dataset.
 
-### Step 2: Set the data paths
+### Step 2: Set data paths
 
-Each experiment script has a `CONFIG` or `BASE_CONFIG` dictionary at the top. Update these paths:
+Each experiment script contains a `CONFIG` (or `BASE_CONFIG`) dictionary at the top. Update the dataset root paths:
 
 ```python
-# In each script, update these paths:
-"casiams_data_root"   : "/path/to/CASIA-MS-ROI",
-"palm_auth_data_root" : "/path/to/smartphone_data",
-"mpd_data_root"       : "/path/to/MPDv2_mediapipe_manual_roi",
-"xjtu_data_root"      : "/path/to/XJTU-UP",
+BASE_CONFIG = {
+    "palm_auth_data_root"  : "/path/to/X-Palm",          # X-Palm dataset
+    "casiams_data_root"    : "/path/to/CASIA-MS-ROI",    # CASIA-MS ROI images
+    "mpd_data_root"        : "/path/to/MPDv2_ROI",       # MPD-v2 ROI images
+    "xjtu_data_root"       : "/path/to/XJTU-UP",         # XJTU-UP dataset
+    ...
+}
 ```
 
-### Step 3: Verify the expected directory structures
+### Step 3: Verify directory structures
 
-**CASIA-MS** (flat directory with all ROI images):
+**X-Palm** (nested by subject):
+```
+X-Palm/
+├── {subject_id}/
+│   ├── roi_perspective/
+│   │   ├── {id}_{side}_{condition}.jpg         # e.g. 1_left_wet.jpg
+│   │   └── {id}_{side}_{condition}_{rep}.jpg   # e.g. 1_left_rnd_1.jpg
+│   └── roi_scanner/
+│       └── {id}_{Side}_{spectrum}_{rep}.jpg    # e.g. 1_Left_green_01.jpg
+├── {subject_id}/
+└── ...
+```
+
+**CASIA-MS** (flat directory):
 ```
 CASIA-MS-ROI/
-├── 001_Left_blue_01.jpg
-├── 001_Left_blue_02.jpg
-├── 001_Left_green_01.jpg
+├── {id}_{side}_{spectrum}_{rep}.jpg
 └── ...
 ```
 
-**Palm-Auth** (nested by subject):
+**MPD-v2** (flat directory):
 ```
-smartphone_data/
-├── 1/
-│   ├── roi_perspective/
-│   │   ├── 1_left_wet.jpg
-│   │   ├── 1_left_rnd_1.jpg
-│   │   └── ...
-│   └── roi_scanner/
-│       ├── 1_Left_green_01.jpg
-│       └── ...
-├── 2/
-└── ...
-```
-
-**MPDv2** (flat directory):
-```
-MPDv2_mediapipe_manual_roi/
-├── 001_01_h_l_01.jpg
-├── 001_01_h_l_02.jpg
+MPDv2_ROI/
+├── {subject}_{session}_{device}_{hand}_{iteration}.jpg
 └── ...
 ```
 
@@ -311,77 +295,81 @@ MPDv2_mediapipe_manual_roi/
 ```
 XJTU-UP/
 ├── iPhone/
-│   ├── Flash/
-│   │   ├── L_001/
-│   │   │   ├── 001.jpg
-│   │   │   └── ...
-│   │   └── R_001/
-│   └── Nature/
+│   ├── Flash/{L,R}_{id}/*.jpg
+│   └── Nature/{L,R}_{id}/*.jpg
 └── huawei/
-    ├── Flash/
-    └── Nature/
+    ├── Flash/{L,R}_{id}/*.jpg
+    └── Nature/{L,R}_{id}/*.jpg
 ```
 
 ---
 
 ## Running Experiments
 
-Each experiment is a self-contained Python script. Run from the corresponding directory:
+Each experiment is a self-contained Python script:
 
 ```bash
-# Experiment 1: Cross-Dataset (all 16 combinations)
+# Protocol 1: Cross-Dataset (4×4 grid, all 12 baselines)
 cd cross_dataset
 python CompNet_singleScript_allCombinations.py
 
-# Experiment 2: Leave-One-Dataset-Out (4 experiments)
-cd leave_one_dataset_out
-python CompNet_LeaveOneOut.py
-
-# Experiment 3: Cross-Domain Closed-Set (12 settings)
+# Protocol 2: Closed-Set Cross-Domain (12 settings)
 cd closed_set_cross_domain
 python CompNet_CrossDomain_ClosedSet.py
 
-# Experiment 4: Cross-Domain Open-Set (12 settings)
+# Protocol 3: Open-Set Cross-Domain (12 settings)
 cd open_set_cross_domain
-python compnet_crossdomain_openset.py
+python CompNet_CrossDomain_OpenSet.py
+
+# Protocol 4: Leave-One-Dataset-Out (4 experiments)
+cd leave_one_dataset_out
+python CompNet_LeaveOneOut.py
 ```
 
-To run a different baseline, replace `CompNet_*` with the corresponding script (e.g., `CCNet_*`, `DINOv2_*`). All baselines produce results in the same format.
-
-### Reproducibility
-
-The code ensures reproducibility through three mechanisms:
-
-1. **Fixed random seed** (`random_seed: 42`) controls all ID splits, data sampling, and gallery/probe assignments.
-2. **Cached initial weights:** The first baseline to run saves its randomly initialized weights to disk. All subsequent runs (and all baselines with the same architecture and number of classes) load these weights, ensuring identical starting points.
-3. **Persisted splits:** Cross-domain experiments save train/test ID splits and gallery/probe sample assignments to JSON files (`palm_auth_closedset_splits.json`, `palm_auth_openset_splits.json`) on first run. All baselines load the same splits.
+Replace `CompNet` with any other baseline name to run that model under the same evaluation framework.
 
 ---
 
-## Evaluation Protocol
+## Implementation Details
 
-### Embedding Extraction
+All details follow Appendix A.2 of the paper:
 
-All models produce 512-dimensional L2-normalized embeddings via a `get_embedding(x)` method that runs the backbone without the classification head or dropout.
-
-### Matching
-
-Cosine similarity between all probe and gallery embeddings produces a full similarity matrix. From this matrix:
-
-**EER (Equal Error Rate):** Every probe-gallery pair is scored. Genuine pairs (same identity) are positive; impostor pairs (different identity) are negative. The EER is the operating point where FAR = FRR, computed via interpolation on the ROC curve.
-
-**Rank-1 Accuracy:** For each probe, the gallery sample with the highest cosine similarity is selected. Rank-1 counts the fraction of probes whose nearest-neighbor gallery match has the correct identity.
-
-### Data Balancing
-
-To ensure fair comparison across datasets with different sizes, each dataset is standardized to 190 identities:
-
-| Group | # Identities | Target samples/ID | Purpose |
+| Parameter | Palmprint Models | ConvNeXtV2 / DINOv2 | ArcFace / MagFace |
 |---|---|---|---|
-| High | 150 | 29-33 (dataset-dependent) | Sufficient training data |
-| Low | 40 | 14-16 (dataset-dependent) | Simulates realistic imbalance |
+| Input size | 112 × 112 | 112 × 112 | 112 × 112 |
+| Epochs | 200 | 200 | 200 |
+| Batch size | 64 | 64 | 64 |
+| Optimizer | Adam | AdamW | AdamW |
+| Learning rate | 1e-3 | 1e-3 | 1e-4 |
+| LR schedule | Step decay | Cosine annealing | Cosine annealing |
+| Weight decay | — | — | 5e-4 |
+| Frozen layers | None | All except last stage/2 blocks | First 75% of tensors |
+| Runs | 3 (independent seeds) | 3 | 3 |
 
-Sampling is balanced across available spectra/devices/conditions within each identity.
+**Augmentation** (shared across all models): contrast jitter, random crop, perspective distortion, and edge-anchored rotation.
+
+**Matching:** Cosine similarity on L2-normalized embeddings.
+
+**Reproducibility safeguards:**
+1. Gallery/probe splits generated once with a fixed seed and shared across all models (saved to JSON).
+2. Initial weights cached after first run and reused identically across all train-test combinations.
+3. All results are mean values across 3 independent runs.
+
+---
+
+## Results Summary
+
+### Cross-Dataset: Key Finding
+
+Models trained on X-Palm achieve the **best average cross-dataset generalization**, demonstrating that exposure to compound in-the-wild variations forces models to learn more robust features. Conversely, models trained on other datasets experience severe performance degradation when tested on X-Palm (EER >33% for all models).
+
+### Cross-Domain: Key Finding
+
+Cross-setting authentication (Scanner↔Smartphone) is extremely challenging for all baselines (average EER >25%). Among in-the-wild conditions, **Roll, Pitch, Wet, Text, and Random** present the greatest difficulty due to severe intra-class variability from pose distortion, surface occlusion, and unpredictable compound variations.
+
+### Leave-One-Out: Key Finding
+
+X-Palm is the most challenging held-out test set (average EER=35.05%), confirming that simply scaling multi-source training data cannot overcome cross-setting and cross-domain challenges without methods designed for compound variability.
 
 ---
 
@@ -391,79 +379,30 @@ Each experiment produces:
 
 ```
 results_dir/
-├── setting_*/                    # One folder per experimental setting
+├── setting_*/
 │   ├── eval/
-│   │   ├── scores_ep0050_*.txt   # Raw similarity scores + labels
-│   │   ├── scores_FINAL_*.txt    # Final evaluation scores
-│   │   └── ...
-│   ├── net_params.pth            # Final model weights
-│   ├── net_params_best_eer.pth   # Best model (lowest EER)
-│   ├── train_curves.png          # Loss and accuracy plots
-│   └── results.json              # Per-setting EER and Rank-1
-├── results_summary.txt           # Formatted results table
-├── results_table.txt             # (cross-dataset) Full EER/Rank-1 matrix
-└── results_raw.json              # Machine-readable results
-```
-
-**Score files** contain one line per probe-gallery pair: `{cosine_similarity} {label}` where label is `1` (genuine) or `-1` (impostor).
-
----
-
-## Project Structure
-
-```
-X-Palm/
-├── README.md
-├── cross_dataset/
-│   ├── CompNet_singleScript_allCombinations.py
-│   ├── CCNet_singleScript_allCombinations.py
-│   └── DINOv2_singleScript_allCombinations.py
-├── leave_one_dataset_out/
-│   ├── CompNet_LeaveOneOut.py
-│   ├── CCNet_LeaveOneOut.py
-│   └── DINOv2_LeaveOneOut.py
-├── closed_set_cross_domain/
-│   ├── CompNet_CrossDomain_ClosedSet.py
-│   ├── CCNet_CrossDomain_ClosedSet.py
-│   └── DINOv2_CrossDomain_ClosedSet.py
-├── open_set_cross_domain/
-│   ├── compnet_crossdomain_openset.py
-│   ├── ccnet_crossdomain_openset.py
-│   └── dinov2_crossdomain_openset.py
-└── palm_auth_*_splits.json       # Auto-generated, shared across baselines
+│   │   └── scores_{tag}.txt    # Per-pair: {cosine_similarity} {1 or -1}
+│   ├── net_params_best_eer.pth # Best model checkpoint
+│   ├── train_curves.png        # Loss and accuracy plots
+│   └── results.json            # Per-setting EER and Rank-1
+├── results_summary.txt         # Formatted results table
+└── results_raw.json            # Machine-readable results
 ```
 
 ---
-
-## Key Hyperparameters
-
-| Parameter | Cross-Dataset | Leave-One-Out | Cross-Domain (Closed) | Cross-Domain (Open) |
-|---|---|---|---|---|
-| Epochs | 100 | 300 | 200 | 300 |
-| Batch size | 128 | 128 | 128 | 128 |
-| Learning rate | 0.001 | 0.001 | 0.001 | 0.001 |
-| LR schedule | Step (30, γ=0.8) | Step (30, γ=0.8) | Step (30, γ=0.8) | Step (30, γ=0.8) |
-| Augmentation | 2× | 2× | 2× | 2× |
-| Embedding dim | 512 | 512 | 512 | 512 |
-| ArcFace (s, m) | (30, 0.5) | (30, 0.5) | (30, 0.5) | (30, 0.5) |
-| Image size | 128×128 | 128×128 | 128×128 | 128×128 |
-| Train ID ratio | 0.80 (same-ds) | N/A (full) | N/A (shared IDs) | 0.80 |
-| Gallery ratio | 0.50 | 0.50 | 0.50 | 0.50 |
-| Eval frequency | Every 50 epochs | Every 50 epochs | Every 50 epochs | Every 50 epochs |
-
----
-
-## License
-
-[Specify your license here]
 
 ## Citation
 
 ```bibtex
-@article{xpalm2026,
-  title   = {X-Palm: A Cross-Domain and Cross-Dataset Benchmark for Palmprint Recognition},
-  author  = {},
-  journal = {},
-  year    = {2026}
+@article{seyedmohammadi2026xpalm,
+  title     = {X-Palm: Paired Multispectral-to-Smartphone Dataset for Cross-Domain Palmprint Authentication},
+  author    = {Seyedmohammadi, Jamal and Ng, Pai Chet and Genovese, Angelo and Chi, Zhixiang and Lee, Jeannie and Plataniotis, Konstantinos N.},
+  journal   = {Preprint},
+  year      = {2026},
+  url       = {https://github.com/X-Palm/X-Palm-2026}
 }
 ```
+
+## License
+
+X-Palm is released under a strict non-commercial End User License Agreement (EULA). Usage is restricted to academic research. See the EULA in the repository for full terms.
