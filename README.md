@@ -399,7 +399,7 @@ results_dir/
   author    = {Seyedmohammadi, Jamal and Ng, Pai Chet and Genovese, Angelo and Chi, Zhixiang and Lee, Jeannie and Plataniotis, Konstantinos N.},
   journal   = {Preprint},
   year      = {2026},
-  url       = {https://github.com/X-Palm/X-Palm-2026}
+  url       = {https://arxiv.org/abs/2606.08437}
 }
 ```
 
