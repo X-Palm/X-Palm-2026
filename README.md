@@ -394,12 +394,11 @@ results_dir/
 ## Citation
 
 ```bibtex
-@article{seyedmohammadi2026xpalm,
-  title     = {X-Palm: Paired Multispectral-to-Smartphone Dataset for Cross-Domain Palmprint Authentication},
-  author    = {Seyedmohammadi, Jamal and Ng, Pai Chet and Genovese, Angelo and Chi, Zhixiang and Lee, Jeannie and Plataniotis, Konstantinos N.},
-  journal   = {Preprint},
-  year      = {2026},
-  url       = {https://arxiv.org/abs/2606.08437}
+@article{seyedmohammadi2026x,
+  title={X-Palm: Paired Multispectral-to-Smartphone Dataset for Cross-Domain Palmprint Authentication},
+  author={Seyedmohammadi, Jamal and Ng, Pai Chet and Genovese, Angelo and Chi, Zhixiang and Lee, Jeannie and Plataniotis, Konstantinos N},
+  journal={arXiv preprint arXiv:2606.08437},
+  year={2026}
 }
 ```
 
