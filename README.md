@@ -1,6 +1,6 @@
 # X-Palm: Paired Multispectral-to-Smartphone Dataset for Cross-Domain Palmprint Authentication
 
-**[Paper] (https://arxiv.org/abs/2606.08437)** | **[GitHub](https://github.com/X-Palm/X-Palm-2026)** | **[Dataset Access](#dataset-access)**
+**[Paper](https://arxiv.org/abs/2606.08437)** | **[GitHub](https://github.com/X-Palm/X-Palm-2026)** | **[Dataset Access](#dataset-access)**
 
 X-Palm is a cross-domain palmprint dataset comprising **6,006 palm images from 103 individuals (206 hands)**, designed to bridge the gap between controlled multispectral enrollment and unconstrained smartphone authentication. It is the first palmprint dataset providing **paired-identity acquisition** across these two domains, encompassing a broad spectrum of in-the-wild variability.
 
