@@ -82,13 +82,13 @@ Cross-dataset evaluation uses three additional public datasets:
 |---|---|---|---|---|
 | CASIA-MS | 200 | 7,200 | 1 scanner | 6 spectra, controlled |
 | MPD-v2 | 400 | 16,000 | 2 smartphones | Background + lighting variation |
-| XJTU-UP | 200 | 20,000 | 5 smartphones | 2 lighting conditions |
+| XJTU-UP | 200 | 8,000 | 2 smartphones | 2 lighting conditions |
 
 ### Dataset Access
 
 X-Palm is released for **non-commercial academic use only**. To obtain access:
 
-1. Review the End User License Agreement (EULA) available in the [repository](https://github.com/X-Palm/X-Palm-2026)
+1. Review the End User License Agreement (EULA) available in the [repository](https://forms.office.com/r/QvwACjaC0c)
 2. Submit a signed EULA as instructed on the repository page
 3. Approved requests receive a time-limited secure download link within 24 hours
 
