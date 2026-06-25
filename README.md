@@ -254,7 +254,7 @@ Each experiment script contains a `CONFIG` (or `BASE_CONFIG`) dictionary at the 
 
 ```python
 BASE_CONFIG = {
-    "palm_auth_data_root"  : "/path/to/X-Palm",          # X-Palm dataset
+    "palm_auth_data_root"  : "/path/to/X-Palm_Data",     # X-Palm dataset
     "casiams_data_root"    : "/path/to/CASIA-MS-ROI",    # CASIA-MS ROI images
     "mpd_data_root"        : "/path/to/MPDv2_ROI",       # MPD-v2 ROI images
     "xjtu_data_root"       : "/path/to/XJTU-UP",         # XJTU-UP dataset
@@ -264,17 +264,33 @@ BASE_CONFIG = {
 
 ### Step 3: Verify directory structures
 
-**X-Palm** (nested by subject):
+**X-Palm** (organised by modality, then sub-folder type, then subject):
 ```
-X-Palm/
-├── {subject_id}/
-│   ├── roi_perspective/
-│   │   ├── {id}_{side}_{condition}.jpg         # e.g. 1_left_wet.jpg
-│   │   └── {id}_{side}_{condition}_{rep}.jpg   # e.g. 1_left_rnd_1.jpg
-│   └── roi_scanner/
-│       └── {id}_{Side}_{spectrum}_{rep}.jpg    # e.g. 1_Left_green_01.jpg
-├── {subject_id}/
-└── ...
+X-Palm_Data/
+├── scanner/
+│   ├── scanner_extracted_roi/
+│   │   └── {subject_id}/
+│   │       └── {id}_{Side}_{spectrum}.jpg      # e.g. 3_Left_green.jpg
+│   └── scanner_raw_data/
+│       └── {subject_id}/
+│           └── {id}_{Side}_{spectrum}.jpg      # e.g. 3_Left_green.jpg
+└── smartphone/
+    ├── smartphone_extracted_roi/
+    │   └── {subject_id}/
+    │       ├── {id}_{side}_{condition}.jpg         # e.g. 3_left_bf.jpg
+    │       └── {id}_{side}_{condition}_{rep}.jpg   # e.g. 3_left_rnd_1.jpg
+    └── smartphone_raw_data/
+        └── {subject_id}/
+            ├── {id}_{side}_bf.jpg
+            ├── {id}_{side}_close.jpg
+            ├── {id}_{side}_far.jpg
+            ├── {id}_{side}_fl.jpg
+            ├── {id}_{side}_jf.jpg
+            ├── {id}_{side}_pitch.jpg
+            ├── {id}_{side}_rnd_1.jpg
+            ├── {id}_{side}_rnd_2.jpg
+            ├── {id}_{side}_rnd_3.jpg
+            └── ...
 ```
 
 **CASIA-MS** (flat directory):
